@@ -8,6 +8,9 @@ class Player(CircleShape):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
         self.timer = 0
+        self.velocity = pygame.Vector2(0,0)
+        self.acceleration = 300
+        self.friction = 0.98
 
     def rotate(self, dt):
         self.rotation += (PLAYER_TURN_SPEED * dt)
@@ -28,6 +31,8 @@ class Player(CircleShape):
     def update(self, dt):
         self.timer -= dt
         keys = pygame.key.get_pressed()
+        self.add_friction()
+        self.position += self.velocity *dt
 
         if keys[pygame.K_a]:
             self.rotate((0-dt))
@@ -42,7 +47,13 @@ class Player(CircleShape):
 
     def move(self, dt):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
-        self.position += forward * PLAYER_SPEED * dt
+        self.velocity += forward * self.acceleration * dt
+
+        if self.velocity.length() > PLAYER_SPEED:
+            self.velocity.scale_to_length(PLAYER_SPEED)
+
+    def add_friction(self):
+        self.velocity *= self.friction
 
     def shoot(self, x, y, velocity):
         if self.timer > 0:
